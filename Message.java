@@ -3,15 +3,17 @@ public class Message {
     private String sender;
     private String receiver;
     private String body;
+    private int id;
 
-    public Message(String sender, String receiver, String body) {
+    public Message(String sender, String receiver, String body, int id) {
         this.isRead = false;
         this.sender = sender;
         this.receiver = receiver;
         this.body = body;
+        this.id = id;
     }
 
-    public void setRead(boolean read) {
+    public void setStatus(boolean read) {
         this.isRead = read;
     }
 
@@ -41,5 +43,13 @@ public class Message {
 
     public String getSender() {
         return this.sender;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return this.id;
     }
 }
