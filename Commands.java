@@ -1,5 +1,4 @@
 import java.rmi.*;
-import java.util.ArrayList;
 
 public interface Commands extends Remote {
     String createAccount(String username) throws RemoteException;
