@@ -1,3 +1,10 @@
+/**
+ * This class represents a message object as described in the project
+ * requirements.
+ * @author Christos Balaktsis
+ * @email  mpalaktsc@csd.auth.gr
+ * @aem    3865
+ */
 public class Message {
     private boolean isRead;
     private String sender;
