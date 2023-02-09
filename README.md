@@ -1,72 +1,64 @@
 # Request-Reply Messaging CLI Application
-## Παραδοχές
-- Κάθε client ξεκινά την επικοινωνία του (request) με τον server αιτούμενος μια συγκεκριμένη λειτουργία, λαμβάνει την απόκρισή του και τερματίζει τη σύνδεση. 
-- Υπάρχει μοναδικός server που εξυπηρετεί (reply) αιτήματα, σερβίροντας την κατάλληλη απόκριση (απάντηση, μήνυμα σφάλματος ή επιβεβαίωσης) στον αιτούμενο client. Ο server δύναται να εξυπηρετήσει πολλαπλά αιτήματα (από διαφορετικούς client) ταυτόχρονα, όντας υλοποιημένος με την τεχνολογία *RMI*, που επιτρέπει (αυτόματα) multithreading.
-- Ο server παραμένει σε λειτουργία μετά την εξυπηρέτηση κάθε αιτήματος client και διατηρεί πληροφορίες ιστορικού/καταλόγου καθόλη τη διάρκεια λειτουργίας του, σχετικά με τους λογαριασμούς χρηστών, το ιστορικό και την κατάσταση μηνυμάτων. Μετά τον τερματισμό (διακοπή λειτουργίας) του, τα δεδομένα χάνονται, καθώς αποθηκεύονται μόνο στην κύρια μνήμη του συστήματος.
-- Για την ομαλή λειτουργία του συστήματος (όχι στην περίπτωση εκτέλεσης των *jar* αρχείων), απαιτείται πρώτα μεταγλώττιση
+## Assumptions
+- Each client initiates its communication (requests) with the server by requesting a specific operation, receives its response and terminates the connection.
+- There is a single server that serves (replies) requests, serving the appropriate response (reply, error or confirmation message) to the requesting client. The server can serve multiple requests (from different clients) simultaneously, being implemented with *RMI technology*, which allows (automatic) multithreading.
+- The server remains operational after each client request has been served and maintains history/directory information throughout its operation, regarding user accounts, history and message status. After shuting down, the data is lost, as it is stored only in the system's main memory.
+- For the normal operation of the system (not in the case of running *jar* files), it requires compiling first.
 
-
-## Κλάσεις
-Για την υλοποίηση του project, αναπτύχθηκαν οι εξής 5 κλάσεις και 1 διεπαφή (interface) σε γλώσσα Java.
-
+## Classes
+For the implementation of the project, the following 5 classes and 1 interface were developed in Java lang.
 
 ### 1. `class Client`
-Η κλάση `Client` αναπαριστά τον χρήστη του συστήματος που αποστέλει αιτήματα στο σύστημα (σ.σ. server) προς εξυπηρέτηση. Η δημιουργία request γίνεται με την εντολή:
+The `Client` class represents the system user sending requests to the system (i.e. server) for service. The request is created with the command:
 
     > java Client <server-ip> <server-port> <function-id> <arguments>
 
-Η λειτουργία της κλάσης βασίζεται στο *parsing* των παραμέτρων εισόδου (`String[] args`) και την κλήση της κατάλληλης μεθόδου που είναι εκχωρημένη στην RMI registry του συστήματος του Server, δηλαδή εντοπίζει την RMI registry του δικτύου του server μέσω των `server-ip` και `server-port`, και καλεί τις μεθόδους που έχουν αντιστοιχηθεί από την εκφώνηση στο δηλωθέν `function-id`. Τα `arguments` συνιστούν μια ακολουθίας από μία τουλάχιστον συμβολοσειρά και περνούν από *parsing* βάσει του `function-id`.
+The operation of the class is based on *parsing* the input parameters (`String[] args`) and calling the appropriate method assigned to the RMI registry of the server system, i.e. it locates the RMI registry of the server network via `server-ip` and `server-port`, and calls the methods assigned by the expression to the declared `function-id`. The `arguments` constitute a sequence of at least one string, and are *parsed* based on the `function-id`.
 
-Μόλις εκτελεστεί η συνάρτηση `main` της κλάσης με τα κατάλληλα ορίσματα, εντοπίζεται η RMI registry του server, υποβάλλεται το αίτημα για εκτέλεση της μεθόδου που έχει καταχωρηθεί και λαμβάνει απόκριση, που εμφανίζεται στο τερματικό.
+Once the `main` function of the class is executed with the appropriate arguments, the server's RMI registry is located, a request is made to execute the registered method, and a response is received, displayed in the terminal.
 
 
 ### 2. `class Server`
-Η κλάση `Server` αναπαριστά το σύστημα ελέγχου, διαχείρισης και υλοποίησης της επικοινωνίας μεταξύ των χρηστών (σ.σ. client(s)), απαντώντας/ικανοποιώντας τα αιτήματά τους ή σερβίροντας τα αιτούμενα δεδομένα. Η απάντηση (reply) γίνεται με την εντολή:
+The `Server` class represents the system for controlling, managing and implementing the communication between users (i.e. client(s)), answering/fulfilling their requests or serving the requested data. The response (reply) is done by the command:
 
-    > java Server <server-port>
+    > java Server <server-port>.
 
-Η λειτουργία της κλάσης βασίζεται στην *εγκαθίδρυση* μιας RMI registry σε συγκεκριμένο `port` της τρέχουσας `ip` διεύθυνσης του Server, στην οποία συνδέει/αντιστοιχεί τις υπογραφές των μεθόδων λειτουργίας (functions- βλ. `interface Commands`) με τις υλοποιήσεις τους για τη λειτουργία του, όπως ο server ορίζει (βλ. `class CommandExecution`). Αυτό επιτυγχάνεται μέσω της αντιστοίχισης του alias *commands* με το αντικείμενο *stub* που πλαισιώνει τις υλοποιήσεις των μεθόδων. Ο client, με το alias που ο server ορίζει και καταχωρεί στη registry του, γνωρίζει και καλεί τις μεθόδους που του υποδεικνύει το *stub*, το οποίο γνωρίζει ότι είναι τύπου `Commands`. Ουσιαστικά, λοιπόν, μέσω της registry, ο client "κουμπώνει" τις υλοποιήσεις που ο server υποδεικνύει για το interface που γνωρίζουν και οι δύο.
+The operation of the class is based on *establishing* an RMI registry at a specific `port` of the current `ip` address of the Server, in which it associates/matches the signatures of the function methods (functions; see `interface Commands`) with their implementations for operation as defined by the server (see `class CommandExecution`). This is accomplished by mapping the *commands* alias to the *stub* object that frames the method implementations. The client, with the alias that the server defines and registers in its registry, calls the methods pointed to by *stub*, that are of type `Commands`.
 
-Μόλις εκτελεστεί η συνάρτηση `main` της κλάσης με τα κατάλληλα ορίσματα, δημιουργείται η RMI registry του server, καταχωρείται η υλοποίηση-κλάση `CommandExecution` για τη διεπαφασή `Commands` και ο server παραμένει σε ετοιμότητα για λήψη και εξυπηρέτηση αιτημάτων από έναν ή περισσότερους clients. Αξίζει να σημειωθεί πως μπορεί να εξυπηρετήσει ταυτόχρονα πολλούς clients, χάρη στους μηχανισμού πολυνηματισμού της τεχνολογίας RMI.
+Once the `main` class function is executed with the appropriate arguments, the server's RMI registry is created, the `CommandExecution` implementation-class for the `Commands` interface is registered, and the server remains ready to receive and serve requests from one or more clients. It is worth noting that it can serve multiple clients simultaneously, thanks to the multithreading mechanisms of RMI technology.
 
 
 ### 3. `class Account`
-Η κλάση `Account` αναπαριστά έναν τυπικό χρήστη του συστήματος, ο οποίος περιγράφεται από έναν μοναδικό αναγνωριστικό κωδικό `authToken`, το όνομα `username` του, τη λίστα των μηνυμάτων του `messageBox` και έναν μετρητή μηνυμάτων `messageCounter`, ο οποίος λειτουργεί σαν αύξων αριθμός, χωρίς να ενημερώνεται σε περίπτωση διαφραφής.
-Η κλάση περιλαμβάνει ακόμη μεθόδους τύπου *getter* για τα προαναφερθέντα, *private* χαρακτηριστικά της.
+The `Account` class represents a typical system user, described by a unique `authToken` identifier, its `username`, a list of messages in the `messageBox` and a message counter `messageCounter`, which acts as a serial number, not updating in case of an message deletion.
+The class also includes *getter* type methods for the aforementioned *private* attributes.
 
 
 ### 4. `class Message`
-Η κλάση `Message` αναπαριστά ένα μήνυμα για το σύστημα, το οποίο περιγράφεται από μία λογική μεταβλητή αναγνωστικής κατάστασης `isRead`, τα ονόματα του αποστολέα `sender` και του παραλήπτη `receiver`, το σώμα του μηνύματος `body` και ένα αναγνωριστικό κωδικό `id` που αντικατοπτρίζει τον επόμενο `messageCounter` αριθμό του παραλήπτη. Αξίζει να σημειωθεί ότι οι κωδικοί των μηνυμάτων αφορέρονται στη λίστα μηνυμάτων κάθε χρήστη και, συνεπώς, προσδιορίζουν το μήνυμα σε συνδυασμό με το `Account` στου οποίου το `messageBox` ανήκουν.
-Η κλάση περιλαμβάνει ακόμη μεθόδους τύπου *getter* και *setter* για τα προαναφερθέντα, *private* χαρακτηριστικά της.
+The `Message` class represents a message on the system, described by a `isRead` read state logic variable, the names of the sender `sender` and the receiver `receiver`, the message body `body`, and an identifier code `id` reflecting the next `messageCounter` number of the receiver. It is worth noting that message codes are associated with each user's message list and therefore identify the message in conjunction with the `Account` to whose `messageBox` they belong.
+The class includes methods of type *getter* and *setter* for the aforementioned *private* attributes.
 
 
 ### 5. `interface Commands`
-Η διεπαφή `Commands` ορίζει τις έξι (6) λειτουργίες που μπορεί ένας χρήστης να αιτηθεί μέσω ενός client. Περιλαμβάνει τις αφηρημένες μεθόδους:
+The interface `Commands` defines 6 operations (functions) that a user can request through a client. It includes the abstract methods:
 
-- `String createAccount(String username)
-` για τη δημιουργία λογαριασμού στο σύστημα.
-- `String showAccounts(int authToken)
-` για την προβολή όλων των δημιουργήμενων λογαριασμών του συστήματος.
-- `String sendMessage(int authToken, String receiver, String messageBody)
-` για την αποστολή μηνύματος από έναν χρήστη προς έναν άλλο.
-- `String showInbox(int authToken)
-` για την προβολή του γραμματοκιβωτίου του χρήστη.
-- `String readMessage(int authToken, int messageID)
-` για την προβολή (διάβασμα) ενός παραληφθέντος μηνύματος από έναν χρήστη.
-- ` String deleteMessage(int authToken, int messageID)
-` για τη διαγραφή ενός παραληφθέντος μηνύματος από έναν χρήστη.
+- `String createAccount(String username)` to create an account in the system.
+- `String showAccounts(int authToken)` for displaying all created accounts on the system.
+- `String sendMessage(int authToken, String receiver, String messageBody)` to send a message from one user to another.
+- `String showInbox(int authToken)` for displaying the user's mailbox.
+- `String readMessage(int authToken, int messageID)` to display (read) a received message from a user.
+- ` String deleteMessage(int authToken, int messageID)` to delete a received message from a user.
 
 
 ### 6. `class CommandExecution`
-Η κλάση `CommandExecution` αναπαριστά την υλοποίηση των μεθόδων της διεπαφής `Commands`, όπως ο server επιλέγει να ορίσει. Διατηρεί και διαχειρίζεται, ακόμη, τη λίστα όλων των δημιουργημένων λογαριασμών χρήστη `List<Account> accountList` και έναν αύξοντα αριθμό `tokenCounter` (ο οποίος ξεκινά από την τιμή **1001** για τον **1ο** χρήστη) για την απόδοση `authToken` σε κάθε νέο χρήστη (`Account`). 
+The `CommandExecution` class represents the implementation of the `Commands` interface methods as the server chooses to define them. It also maintains and manages the list of all created user accounts `List<Account> accountList` and a serial number `tokenCounter` (starting at **1001** for the **1st** user) for assigning `authToken` to each new user (`Account`). 
 
-Περιλαμβάνει μεθόδους τύπου *getter* και *setter* για τα *private* χαρακτηριστικά της κλάσης και τις εξής βοηθητικές, *private* μεθόδους:
-- `static boolean isValidUsername(String name)` που ελέγχει αν το username που επιλέγει ένας χρήστης για τον λογαριασμό που δημιουργεί είναι έγκυρο: ξεκινάει από αλφαβητικό χαρακτήρα και περιλαμβάνει αλφαριθμητικούς χαρακτήρες μόνο.
-- `Account getUserByToken(int authToken)` που επιστρέφει αντικείμενο τύπου `Account` για δοθέν αναγνωριστικό αριθμό `authToken`, εάν αυτό αντιστοιχεί σε υπάρχοντα λογαριασμό.
-- `Account getUserByUsername(String username)` που επιστρέφει αντικείμενο τύπου `Account` για δοθέν (αλφαριθμητικό) username, εάν αυτό αντιστοιχεί σε υπάρχοντα λογαριασμό.
-- `Message getMessageById(Account a, int id)` που επιστρέφει αντικείμενο τύπου `Message` από τη λίστα των μηνυμάτων του χρήστη `a` με κωδικό μηνύματος `id`, εφόσον αυτό υπάρχει.
+It includes *getter* and *setter* type methods for the *private* attributes of the class and the following helper, *private* methods:
+- `static boolean isValidUsername(String name)` which checks if the username a user chooses for the account they create is valid: it starts with an alphabetic character and includes alphanumeric characters only.
+- `Account getUserByToken(int authToken)` which returns an object of type `Account` for a given identifier `authToken`, if it corresponds to an existing account.
+- `Account getUserByUsername(String username)` which returns an object of type `Account` for a given (alphanumeric) username, if this corresponds to an existing account.
+- `Message getMessageById(Account a, int id)` which returns an object of type `Message` from the list of messages of user `a` with message code `id`, if any.
 
-Πέραν των βοηθητικών αυτών μεθόδων, έχουν υλοποιηθεί (`@Override`) οι έξι (6) λειτουργίες (μέθοδοι) που περιγράφονται στην εκφώνηση και οι περισσότερες απαιτούν και βασίζονται στον **έλεγχο επικύρωσης του `authToken`** του χρήστη που αιτείται ενέργεια, πριν την εκτέλεση της εκάστοτε δραστηριότητας και την αποστολή *reply*.
-> Λεπτομέρειες υλοποίησης μπορούν να βρεθούν στα σχόλια που συνοδεύουν τον κώδικα.
+In addition to these helper methods, the six functions (methods) described in the exposition have been implemented (`@Override`), most of which require and rely on **validation checking of the `authToken`** of the user requesting action before performing any activity and sending a *reply*.
+> Implementation details can be found in the comments accompanying the code.
 
-Συνεπώς, με την εν λόγω κλάση ο server έχει καθορίσει την ανάπτυξη των υπογραφών των μεθόδων-λειτουργιών που οι clients γνωρίζουν και καλούν για την υποβολή των αιτημάτων τους (*requests*).
+Therefore, with this class, the server has defined the implementation of the signatures of the method-functions that clients know and call to submit their *requests*.
